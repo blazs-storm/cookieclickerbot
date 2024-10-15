@@ -1,0 +1,2 @@
+# cookieclickerbot
+automate cookie clicker
