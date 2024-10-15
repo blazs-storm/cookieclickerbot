@@ -11,7 +11,7 @@ This is a userscript that fully automates Cookie Clicker, a popular incremental 
 - Harvests and plants in the garden (if unlocked)
 - Automates ascensions, heavenly chips spending, and dragon training
 - Manages sugar lumps automatically
-- Buys cheaper upgrade/building
+- Buys cheaper upgrade/building and it gets which upgrade gets more cookies
 
 ## Installation
 
