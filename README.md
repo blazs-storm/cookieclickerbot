@@ -15,7 +15,7 @@ This is a userscript that fully automates Cookie Clicker, a popular incremental 
 ## Installation
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Greasemonkey](https://www.greasespot.net/) on your browser.
-2. Click [here](https://github.com/blazs-storm/cookie-clicker-automation/raw/main/cookie-clicker-automation.user.js) to install the script directly from this repository.
+2. Click [here](https://github.com/blazs-storm/cookieclickerbot/raw/main/cookie-clicker-automation.user.js) to install the script directly from this repository.
 3. Open [Cookie Clicker](https://orteil.dashnet.org/cookieclicker/) in your browser, and the automation will start automatically.
 
 ## How It Works
