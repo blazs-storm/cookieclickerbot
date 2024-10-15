@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Cookie Clicker Full Automation (Buy Cheaper Option)
+// @name         Cookie Clicker Full Automation (Maximize CPS/CPC)
 // @namespace    http://tampermonkey.net/
-// @version      2.1
-// @description  Automates Cookie Clicker by buying the cheaper option between buildings and upgrades, handling buffs, ascensions, etc.
-// @author       Your Name
+// @version      2.2
+// @description  Automates Cookie Clicker by buying the most efficient option between buildings and upgrades based on cookies per second (CPS) or cookies per click (CPC).
+// @author       blazs-storm
 // @match        https://orteil.dashnet.org/cookieclicker/
 // @grant        none
 // ==/UserScript==
@@ -26,50 +26,61 @@
             Game.ClickCookie();
         }
 
-        // Get the cheapest upgrade available
-        function getCheapestUpgrade() {
-            let cheapestUpgrade = null;
-            let cheapestPrice = Infinity;
-
-            for (let i in Game.UpgradesInStore) {
-                let upgrade = Game.UpgradesInStore[i];
-                if (upgrade.canBuy() && upgrade.getPrice() < cheapestPrice) {
-                    cheapestPrice = upgrade.getPrice();
-                    cheapestUpgrade = upgrade;
-                }
-            }
-
-            return { cheapestUpgrade, cheapestPrice };
-        }
-
-        // Get the cheapest building available
-        function getCheapestBuilding() {
-            let cheapestBuilding = null;
-            let cheapestPrice = Infinity;
+        // Evaluate the most efficient building based on CPS gained per price
+        function getMostEfficientBuilding() {
+            let bestBuilding = null;
+            let bestEfficiency = 0;
 
             for (let i in Game.ObjectsById) {
                 let building = Game.ObjectsById[i];
-                if (building.price < cheapestPrice) {
-                    cheapestPrice = building.price;
-                    cheapestBuilding = building;
+                let price = building.price;
+                let cpsGain = building.storedCps * Game.globalCpsMult; // Estimated CPS gain
+
+                let efficiency = cpsGain / price; // CPS per cookie spent
+
+                if (efficiency > bestEfficiency && price <= Game.cookies) {
+                    bestEfficiency = efficiency;
+                    bestBuilding = building;
                 }
             }
 
-            return { cheapestBuilding, cheapestPrice };
+            return { bestBuilding, bestEfficiency };
         }
 
-        // Compare the prices and buy the cheaper option (either upgrade or building)
-        function buyCheaperOption() {
-            let { cheapestUpgrade, cheapestPrice: upgradePrice } = getCheapestUpgrade();
-            let { cheapestBuilding, cheapestPrice: buildingPrice } = getCheapestBuilding();
+        // Evaluate the most efficient upgrade based on CPS or CPC gained per price
+        function getMostEfficientUpgrade() {
+            let bestUpgrade = null;
+            let bestEfficiency = 0;
 
-            // Compare prices and buy the cheaper one
-            if (upgradePrice <= buildingPrice && upgradePrice <= Game.cookies) {
-                cheapestUpgrade.buy();
-                console.log("Bought upgrade: " + cheapestUpgrade.name);
-            } else if (buildingPrice <= Game.cookies) {
-                cheapestBuilding.buy();
-                console.log("Bought building: " + cheapestBuilding.name);
+            for (let i in Game.UpgradesInStore) {
+                let upgrade = Game.UpgradesInStore[i];
+                let price = upgrade.getPrice();
+
+                // Estimate the potential CPS gain from the upgrade.
+                let cpsGain = Game.cookiesPs; // As a placeholder (more complex upgrades may vary)
+                let efficiency = cpsGain / price; // CPS per cookie spent
+
+                if (efficiency > bestEfficiency && price <= Game.cookies) {
+                    bestEfficiency = efficiency;
+                    bestUpgrade = upgrade;
+                }
+            }
+
+            return { bestUpgrade, bestEfficiency };
+        }
+
+        // Compare the most efficient building and upgrade, and buy the better option
+        function buyMostEfficientOption() {
+            let { bestBuilding, bestEfficiency: buildingEfficiency } = getMostEfficientBuilding();
+            let { bestUpgrade, bestEfficiency: upgradeEfficiency } = getMostEfficientUpgrade();
+
+            // Compare efficiencies and buy the better option
+            if (buildingEfficiency > upgradeEfficiency && bestBuilding) {
+                bestBuilding.buy();
+                console.log("Bought building: " + bestBuilding.name + " with efficiency: " + buildingEfficiency);
+            } else if (bestUpgrade) {
+                bestUpgrade.buy();
+                console.log("Bought upgrade: " + bestUpgrade.name + " with efficiency: " + upgradeEfficiency);
             }
 
             // Refresh prices after buying
@@ -182,7 +193,7 @@
 
         // Schedule the above functions to run periodically
         setInterval(autoClickCookie, 100); // Click cookie every 100 ms
-        setInterval(buyCheaperOption, 2000); // Try to buy the cheaper option (building or upgrade) every 2 seconds
+        setInterval(buyMostEfficientOption, 2000); // Buy the most efficient option every 2 seconds
         setInterval(autoClickGoldenCookies, 5000); // Click golden cookies every 5 seconds
         setInterval(manageSeasonalEvents, 5000); // Handle seasonal events every 5 seconds
         setInterval(autoGarden, 60000); // Manage garden every minute
